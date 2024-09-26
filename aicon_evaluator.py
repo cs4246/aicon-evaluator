@@ -1,6 +1,8 @@
 import argparse
 import json
 import dataclasses
+import importlib.util
+import sys
 
 class TaskNotFound(Exception):
     pass
@@ -15,7 +17,11 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        import aicon_task as task
+        task_module = "aicon_task"
+        spec = importlib.util.find_spec(task_module)
+        task = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(task)
+        sys.modules[task_module] = object()
     except ModuleNotFoundError as e:
         raise TaskNotFound(e)
     try:
